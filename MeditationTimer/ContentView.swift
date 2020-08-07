@@ -14,35 +14,50 @@ struct ContentView: View {
     @State var timerMode: TimerMode = .initial
     @State var selectedPickerIndex = 0
     
+    @ObservedObject var timerManager = TimerManager()
+    
     let avaialableMinutes = Array(1...59)
+    
+    
     
     var body: some View {
         NavigationView {
             VStack {
-                Text("60")
+                Text(secondsToMinutesAndSeconds(seconds:timerManager.secondsLeft))
                     .font(.system(size: 80))
                     .padding(.top,100)
                 
-                Image(systemName: timerMode == .running ? "play.circle.fill":"pause.circle.fill")
+                Image(systemName: timerManager.timerMode == .running ? "pause.circle.fill":"play.circle.fill")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 180, height: 180)
                     .foregroundColor(.purple)
+                    .onTapGesture(perform: {
+                        self.timerManager.timerMode == .running ? self.timerManager.pause():self.timerManager.start()
+                })
                 
-                if timerMode == .paused{
+                if timerManager.timerMode == .paused{
                     Image(systemName: "gobackward")
-                    .resizable()
+                        .resizable()
                         .aspectRatio(contentMode: .fit)
-                    .frame(width: 50, height: 50)
-                    .padding(.top,40)
+                        .frame(width: 50, height: 50)
+                        .padding(.top,40)
+                        .onTapGesture(perform: {
+                        self.timerManager.reset()
+                    })
                 }
                 
-                if timerMode == .initial{
+                if timerManager.timerMode == .initial{
                     Picker(selection: $selectedPickerIndex, label: Text("Hello")) {
                         ForEach(0..<avaialableMinutes.count){
                             Text("\(self.avaialableMinutes[$0]) min")
                         }
                     }
+                    .onTapGesture(perform: {
+                    if self.timerManager.timerMode == .initial{
+                        self.timerManager.setTimerLength(minutes: self.avaialableMinutes[self.selectedPickerIndex]*60)
+                    }
+                })
                 .labelsHidden()
                 }
                 
